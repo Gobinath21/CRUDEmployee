@@ -27,9 +27,10 @@ public class EmployeeController {
     //GET EMPLOYEE BY ID
     //localhost:9090/employee/{id}
     @GetMapping("/employee/{id}")
-    public Employee getEmployeeId(@PathVariable int id) {
-        Employee employee = employeeRepository.findById(id).get();
-        return employee;
+    public ResponseEntity<Employee> getEmployeeId(@PathVariable int id) {
+        return employeeRepository.findById(id)
+                .map(employee -> ResponseEntity.ok(employee))
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
     //GET EMPLOYEE BY ROLE
     //localhost:9090/employee/{role}
@@ -46,7 +47,7 @@ public class EmployeeController {
         employeeRepository.save(employee);
    }
 
-   //CHANGE NAME AND ROLL  USING ID
+   //CHANGE NAME, SALARY AND ROLE USING ID
    //localhost:9090/employee/update/"{id}"
     @PutMapping("/employee/update/{id}")
     @Transactional
@@ -55,12 +56,13 @@ public class EmployeeController {
             @RequestBody Map<String, String> requestBody) {
 
         String newName = requestBody.get("name");
+        String newSalary = requestBody.get("salary");
         String newRole = requestBody.get("role");
 
-        if (newName == null && newRole == null) {
+        if (newName == null && newSalary == null && newRole == null) {
             return ResponseEntity.badRequest().build();
         }
-        employeeRepository.updateEmployee(id, newName, newRole);
+        employeeRepository.updateEmployee(id, newName, newSalary, newRole);
         return employeeRepository.findById(id)
                 .map(employee -> ResponseEntity.ok(employee))
                 .orElseGet(() -> ResponseEntity.notFound().build());
